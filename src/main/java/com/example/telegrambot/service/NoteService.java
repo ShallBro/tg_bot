@@ -17,8 +17,8 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class NoteService {
 
-    private final NoteRepository noteRepo;
-    private final TagRepository tagRepo;
+    private final NoteRepository noteRepository;
+    private final TagRepository tagRepository;
     private final TagParser tagParser;
 
     @Transactional
@@ -30,20 +30,27 @@ public class NoteService {
 
         Set<String> tags = tagParser.parse(text);
         for (String tag : tags) {
-            Tag tagEntity = tagRepo.findByName(tag).orElseGet(() -> tagRepo.save(new Tag(tag)));
+            Tag tagEntity = tagRepository.findByName(tag).orElseGet(() -> tagRepository.save(new Tag(tag)));
             note.getTags().add(tagEntity);
         }
 
-        noteRepo.save(note);
+        noteRepository.save(note);
     }
 
     @Transactional(readOnly = true)
     public Note last(Long chatId) {
-        return noteRepo.findTopByChatIdOrderByCreatedAtDesc(chatId).orElse(null);
+        return noteRepository.findTopByChatIdOrderByCreatedAtDesc(chatId).orElse(null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Note> findNotes(Long chatId, String query) {
+        return noteRepository.findByChatIdAndTextContains(
+                chatId,
+                query);
     }
 
     @Transactional(readOnly = true)
     public List<Note> byTag(Long chatId, String tag, int limit) {
-        return noteRepo.findByChatAndTag(chatId, tag.toLowerCase(), PageRequest.of(0, limit)).getContent();
+        return noteRepository.findByChatAndTag(chatId, tag.toLowerCase(), PageRequest.of(0, limit)).getContent();
     }
 }

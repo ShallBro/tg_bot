@@ -9,7 +9,8 @@ import java.util.regex.Pattern;
 
 @Component
 public class TagParser {
-    private static final Pattern TAG = Pattern.compile("(?<!\\w)#([a-zA-Z0-9_\\-]{1,32})");
+    private static final Pattern TAG = Pattern.compile("(?<!\\w)#([\\p{L}0-9_\\-]{1,32})",
+            Pattern.UNICODE_CHARACTER_CLASS);
 
     public Set<String> parse(String text) {
         Set<String> out = new LinkedHashSet<>();

@@ -24,16 +24,27 @@ public class NoteCommandHandler implements UpdateHandler {
     public void handle(Update update) {
         var msg = update.getMessage();
         Long chatId = msg.getChatId();
-        Long messageId = msg.getMessageId().longValue();
 
         String payload = msg.getText()
                 .replaceFirst("^/note(@\\w+)?\\s*", "")
                 .trim();
 
-        if (!payload.isBlank()) {
-            noteService.saveTextNote(chatId, messageId, payload);
+        if (payload.isBlank()) {
+            sender.send(chatId, "❌ Укажи ключевое слово.\nПример: /note liquibase");
+            return;
         }
 
-        sender.send(chatId, payload);
+        var notes = noteService.findNotes(chatId, payload);
+
+        if (notes.isEmpty()) {
+            sender.send(chatId, "🔎 Ничего не найдено по: " + payload);
+            return;
+        }
+
+        String response = notes.stream()
+                .map(note -> "• [" + note.getId() + "] " + note.getText())
+                .reduce("🔎 Нашёл:\n", (acc, line) -> acc + line + "\n");
+
+        sender.send(chatId, response);
     }
 }

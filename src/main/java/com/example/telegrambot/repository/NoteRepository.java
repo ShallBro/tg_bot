@@ -30,4 +30,15 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
             @Param("tag") String tag,
             Pageable pageable
     );
+
+    @Query("""
+        select n
+        from Note n
+        where n.chatId = :chatId
+          and lower(n.text) like lower(concat('%', :q, '%'))
+        order by n.createdAt desc
+        """)
+    List<Note> findByChatIdAndTextContains(@Param("chatId") Long chatId,
+                                           @Param("q") String query);
+
 }
