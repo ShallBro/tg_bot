@@ -1,0 +1,88 @@
+databaseChangeLog:
+  - changeSet:
+      id: 001-init
+      author: tg-bot
+      changes:
+        - createTable:
+            tableName: notes
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: chat_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: message_id
+                  type: BIGINT
+              - column:
+                  name: text
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: now()
+
+        - createTable:
+            tableName: tags
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: name
+                  type: VARCHAR(64)
+                  constraints:
+                    nullable: false
+                    unique: true
+
+        - createTable:
+            tableName: note_tags
+            columns:
+              - column:
+                  name: note_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: tag_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+
+        - addPrimaryKey:
+            tableName: note_tags
+            columnNames: note_id, tag_id
+
+        - addForeignKeyConstraint:
+            baseTableName: note_tags
+            baseColumnNames: note_id
+            referencedTableName: notes
+            referencedColumnNames: id
+            onDelete: CASCADE
+            constraintName: fk_note_tags_note
+
+        - addForeignKeyConstraint:
+            baseTableName: note_tags
+            baseColumnNames: tag_id
+            referencedTableName: tags
+            referencedColumnNames: id
+            onDelete: CASCADE
+            constraintName: fk_note_tags_tag
+
+        - createIndex:
+            tableName: notes
+            indexName: idx_notes_chat_created
+            columns:
+              - column:
+                  name: chat_id
+              - column:
+                  name: created_at

@@ -1,0 +1,27 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/notes
+    username: notes
+    password: notes
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/changelog.yaml
+
+telegram:
+  bot:
+    username: ${TG_BOT_USERNAME}
+    token: ${TG_BOT_TOKEN}
+
+logging:
+  level:
+    org.hibernate.SQL: debug
+    org.hibernate.orm.jdbc.bind: trace

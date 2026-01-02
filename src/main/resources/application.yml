@@ -1,0 +1,24 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    enabled: true
+    change-log: classpath:/db/changelog/changelog.yaml
+
+telegram:
+  bot:
+    username: ${TG_BOT_USERNAME}
+    token: ${TG_BOT_TOKEN}
+
+logging:
+  level:
+    root: info
