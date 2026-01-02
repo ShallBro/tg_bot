@@ -1,3 +1,4 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/2026/changelog.yaml
+      file: 2026/changelog.yaml
+      relativeToChangelogFile: true

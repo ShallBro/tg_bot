@@ -1,3 +1,4 @@
 databaseChangeLog:
   - include:
-      file: db/changelog/2026/01/001-init-schema.yaml
+      file: 01/001-init-schema.yaml
+      relativeToChangelogFile: true
