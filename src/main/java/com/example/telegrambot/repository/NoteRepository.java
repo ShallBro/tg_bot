@@ -17,6 +17,8 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
     List<Note> findByChatIdOrderByCreatedAtDesc(Long chatId, Pageable pageable);
 
+    Optional<Note> findByIdAndChatId(Long id, Long chatId);
+
     @Query("""
         select distinct n
         from Note n

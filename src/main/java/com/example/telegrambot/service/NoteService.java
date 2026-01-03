@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 @Service
@@ -47,6 +48,11 @@ public class NoteService {
         return noteRepository.findByChatIdAndTextContains(
                 chatId,
                 query);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<Note> findNote(Long chatId, Long id) {
+        return noteRepository.findByIdAndChatId(id, chatId);
     }
 
     @Transactional(readOnly = true)

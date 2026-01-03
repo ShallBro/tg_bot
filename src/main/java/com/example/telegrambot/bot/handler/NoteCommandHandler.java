@@ -2,9 +2,12 @@ package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.service.NoteService;
+import com.example.telegrambot.utils.CommandPayloadExtractor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -25,26 +28,34 @@ public class NoteCommandHandler implements UpdateHandler {
         var msg = update.getMessage();
         Long chatId = msg.getChatId();
 
-        String payload = msg.getText()
-                .replaceFirst("^/note(@\\w+)?\\s*", "")
-                .trim();
+        Optional<String> text = CommandPayloadExtractor.extract(msg.getText(), "/note");
 
-        if (payload.isBlank()) {
-            sender.send(chatId, "❌ Укажи ключевое слово.\nПример: /note liquibase");
+        if (text.isEmpty()) {
+            sender.send(chatId, """
+                ❌ Укажи ID заметки
+                
+                Пример:
+                /note 12
+                """);
             return;
         }
 
-        var notes = noteService.findNotes(chatId, payload);
-
-        if (notes.isEmpty()) {
-            sender.send(chatId, "🔎 Ничего не найдено по: " + payload);
+        long id;
+        try {
+            id = Long.parseLong(text.get());
+        } catch (NumberFormatException e) {
+            sender.send(chatId, "❌ ID должен быть числом");
             return;
         }
 
-        String response = notes.stream()
-                .map(note -> "• [" + note.getId() + "] " + note.getText())
-                .reduce("🔎 Нашёл:\n", (acc, line) -> acc + line + "\n");
-
-        sender.send(chatId, response);
+        noteService.findNote(chatId, id)
+                .ifPresentOrElse(
+                        note -> sender.send(chatId,
+                                "🧠 Заметка #" + note.getId() + "\n\n" + note.getText()
+                        ),
+                        () -> sender.send(chatId,
+                                "❌ Заметка с ID " + id + " не найдена"
+                        )
+                );
     }
 }
