@@ -1,7 +1,7 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
-import com.example.telegrambot.entity.Note;
+import com.example.telegrambot.service.ExtractIdService;
 import com.example.telegrambot.service.NoteService;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
@@ -10,28 +10,29 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 @RequiredArgsConstructor
-@Order(2)
-public class LastCommandHandler implements UpdateHandler {
+@Order(6)
+public class DeleteCommandHandler implements UpdateHandler {
 
     private final NoteService noteService;
     private final TelegramBotSender sender;
+    private final ExtractIdService extractService;
 
     @Override
     public boolean supports(Update update) {
         return update.hasMessage()
                 && update.getMessage().hasText()
-                && update.getMessage().getText().startsWith("/last");
+                && update.getMessage().getText().startsWith("/delete");
     }
 
     @Override
     public void handle(Update update) {
-        Long chatId = update.getMessage().getChatId();
-        Note last = noteService.last(chatId);
+        var msg = update.getMessage();
+        Long chatId = msg.getChatId();
 
-        String text = last == null
-                ? "Пока нет заметок"
-                : last.getText();
+        Long id = extractService.extract(msg, "/delete");
 
-        sender.sendText(chatId, text);
+        if (noteService.delete(chatId, id)) {
+            sender.sendText(chatId, "✅ Заметка удалена");
+        }
     }
 }

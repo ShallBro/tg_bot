@@ -4,6 +4,7 @@ import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.service.NoteService;
 import com.example.telegrambot.utils.CommandPayloadExtractor;
 import lombok.RequiredArgsConstructor;
+import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
@@ -11,6 +12,7 @@ import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
+@Order(4)
 public class SearchCommandHandler implements UpdateHandler {
 
     private final NoteService noteService;
@@ -31,14 +33,14 @@ public class SearchCommandHandler implements UpdateHandler {
         Optional<String> text = CommandPayloadExtractor.extract(msg.getText(), "/search");
 
         if (text.isEmpty()) {
-            sender.send(chatId, "❌ Укажи ключевое слово.\nПример: /note liquibase");
+            sender.sendText(chatId, "❌ Укажи ключевое слово.\nПример: /note liquibase");
             return;
         }
 
         var notes = noteService.findNotes(chatId, text.get());
 
         if (notes.isEmpty()) {
-            sender.send(chatId, "🔎 Ничего не найдено по: " + text);
+            sender.sendText(chatId, "🔎 Ничего не найдено по: " + text);
             return;
         }
 
@@ -46,6 +48,6 @@ public class SearchCommandHandler implements UpdateHandler {
                 .map(note -> "• [" + note.getId() + "] " + note.getText())
                 .reduce("🔎 Нашёл:\n", (acc, line) -> acc + line + "\n");
 
-        sender.send(chatId, response);
+        sender.sendText(chatId, response);
     }
 }

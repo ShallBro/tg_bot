@@ -23,7 +23,7 @@ public class NoteService {
     private final TagParser tagParser;
 
     @Transactional
-    public void saveTextNote(Long chatId, Long messageId, String text) {
+    public Note saveTextNote(Long chatId, Long messageId, String text) {
         Note note = new Note();
         note.setChatId(chatId);
         note.setMessageId(messageId);
@@ -35,7 +35,7 @@ public class NoteService {
             note.getTags().add(tagEntity);
         }
 
-        noteRepository.save(note);
+        return noteRepository.save(note);
     }
 
     @Transactional(readOnly = true)
@@ -53,6 +53,14 @@ public class NoteService {
     @Transactional(readOnly = true)
     public Optional<Note> findNote(Long chatId, Long id) {
         return noteRepository.findByIdAndChatId(id, chatId);
+    }
+
+    @Transactional
+    public boolean delete(Long chatId, Long id) {
+        var note = noteRepository.findByIdAndChatId(id, chatId);
+        if (note.isEmpty()) return false;
+        noteRepository.delete(note.get());
+        return true;
     }
 
     @Transactional(readOnly = true)
