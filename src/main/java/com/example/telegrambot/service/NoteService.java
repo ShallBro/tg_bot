@@ -4,6 +4,7 @@ import com.example.telegrambot.entity.Note;
 import com.example.telegrambot.entity.Tag;
 import com.example.telegrambot.repository.NoteRepository;
 import com.example.telegrambot.repository.TagRepository;
+import com.example.telegrambot.service.dto.NoteSlice;
 import com.example.telegrambot.utils.TagParser;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -21,6 +22,18 @@ public class NoteService {
     private final NoteRepository noteRepository;
     private final TagRepository tagRepository;
     private final TagParser tagParser;
+
+
+    public NoteSlice findByTagPaged(Long chatId, String tag, int page, int size) {
+        int fetch = size + 1;
+        var list = noteRepository.findByChatAndTag(chatId, tag, PageRequest.of(page, fetch));
+
+        boolean hasNext = list.size() > size;
+        boolean hasPrev = page > 0;
+
+        var items = hasNext ? list.subList(0, size) : list;
+        return new NoteSlice(items, hasNext, hasPrev, page);
+    }
 
     @Transactional
     public Note saveTextNote(Long chatId, Long messageId, String text) {
@@ -61,10 +74,5 @@ public class NoteService {
         if (note.isEmpty()) return false;
         noteRepository.delete(note.get());
         return true;
-    }
-
-    @Transactional(readOnly = true)
-    public List<Note> byTag(Long chatId, String tag, int limit) {
-        return noteRepository.findByChatAndTag(chatId, tag.toLowerCase(), PageRequest.of(0, limit)).getContent();
     }
 }

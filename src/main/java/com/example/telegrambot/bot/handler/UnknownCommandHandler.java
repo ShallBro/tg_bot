@@ -8,7 +8,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 @RequiredArgsConstructor
-@Order(7)
+@Order(12)
 public class UnknownCommandHandler implements UpdateHandler {
 
     private final TelegramBotSender sender;

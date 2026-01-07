@@ -48,6 +48,6 @@ public class HelpCommandHandler implements UpdateHandler {
                 • /delete 12
                 """;
 
-        sender.sendMarkdown(chatId, text);
+        sender.sendMarkdown(chatId, text, null);
     }
 }
