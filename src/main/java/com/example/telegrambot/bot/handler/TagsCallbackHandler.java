@@ -2,25 +2,25 @@ package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.bot.view.TagCallbacks;
-import com.example.telegrambot.bot.view.TagPagingFacade;
+import com.example.telegrambot.bot.view.TagListFacade;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-@Order(10)
 @Component
+@Order(8)
 @RequiredArgsConstructor
-public class TagPagingCallBackHandler implements UpdateHandler {
+public class TagsCallbackHandler implements UpdateHandler {
 
+    private final TagListFacade tagListFacade;
     private final TelegramBotSender sender;
-    private final TagPagingFacade tagPagingFacade;
 
     @Override
     public boolean supports(Update update) {
         return update.hasCallbackQuery()
                 && update.getCallbackQuery().getData() != null
-                && update.getCallbackQuery().getData().startsWith("tag|");
+                && update.getCallbackQuery().getData().startsWith("tags|");
     }
 
     @Override
@@ -28,13 +28,13 @@ public class TagPagingCallBackHandler implements UpdateHandler {
         var callbackQuery = update.getCallbackQuery();
         sender.answerCallback(callbackQuery.getId());
 
-        TagCallbacks.parseTagNotes(callbackQuery.getData())
-                .ifPresent(payload -> tagPagingFacade.render(
-                        callbackQuery.getMessage().getChatId(),
-                        callbackQuery.getMessage().getMessageId(),
-                        payload.tag(),
-                        payload.page(),
-                        true
-                ));
+        int page = TagCallbacks.parseTagsPage(callbackQuery.getData())
+                .orElse(0);
+
+        tagListFacade.editPage(
+                callbackQuery.getMessage().getChatId(),
+                callbackQuery.getMessage().getMessageId(),
+                page
+        );
     }
 }

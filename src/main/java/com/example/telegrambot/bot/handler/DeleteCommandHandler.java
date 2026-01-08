@@ -3,33 +3,36 @@ package com.example.telegrambot.bot.handler;
 import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.service.ExtractIdService;
 import com.example.telegrambot.service.NoteService;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-@RequiredArgsConstructor
 @Order(6)
-public class DeleteCommandHandler implements UpdateHandler {
+public class DeleteCommandHandler extends SlashCommandHandler {
 
     private final NoteService noteService;
     private final TelegramBotSender sender;
     private final ExtractIdService extractService;
 
-    @Override
-    public boolean supports(Update update) {
-        return update.hasMessage()
-                && update.getMessage().hasText()
-                && update.getMessage().getText().startsWith("/delete");
+    public DeleteCommandHandler(NoteService noteService,
+                                TelegramBotSender sender,
+                                ExtractIdService extractService) {
+        super("delete");
+        this.noteService = noteService;
+        this.sender = sender;
+        this.extractService = extractService;
     }
 
     @Override
-    public void handle(Update update) {
+    protected void handleCommand(Update update) {
         var msg = update.getMessage();
         Long chatId = msg.getChatId();
 
-        Long id = extractService.extract(msg, "/delete");
+        Long id = extractService.extract(msg, command());
+        if (id == null) {
+            return;
+        }
 
         if (noteService.delete(chatId, id)) {
             sender.sendText(chatId, "✅ Заметка удалена");

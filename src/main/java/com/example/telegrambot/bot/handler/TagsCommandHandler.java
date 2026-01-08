@@ -1,55 +1,38 @@
 package com.example.telegrambot.bot.handler;
 
-import com.example.telegrambot.bot.TelegramBotSender;
-import com.example.telegrambot.service.TagService;
-import com.example.telegrambot.service.dto.TagStat;
-import lombok.RequiredArgsConstructor;
+import com.example.telegrambot.bot.view.TagListFacade;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.regex.Pattern;
-
 @Order(9)
 @Component
-@RequiredArgsConstructor
-public class TagsCommandHandler implements UpdateHandler {
+public class TagsCommandHandler extends SlashCommandHandler {
 
-    private final TagService tagService;
-    private final TelegramBotSender sender;
+    private final TagListFacade tagListFacade;
 
-    private static final Pattern TAGS_CMD =
-            Pattern.compile("^/tags(@\\w+)?(\\s|$)");
-
-    @Override
-    public boolean supports(Update update) {
-        return update.hasMessage()
-                && update.getMessage().hasText()
-                && TAGS_CMD.matcher(update.getMessage().getText().trim()).find();
+    public TagsCommandHandler(TagListFacade tagListFacade) {
+        super("tags");
+        this.tagListFacade = tagListFacade;
     }
 
     @Override
-    public void handle(Update update) {
+    protected void handleCommand(Update update) {
         Long chatId = update.getMessage().getChatId();
+        int page = resolvePage(extractPayload(update).orElse(null));
+        tagListFacade.sendPage(chatId, page);
+    }
 
-        var tags = tagService.getTopTags(chatId, 30);
-
-        if (tags.isEmpty()) {
-            sender.sendMarkdown(chatId,
-                    "Пока нет тегов. Добавь их в заметку: `#работа #идеи`", null);
-            return;
+    private int resolvePage(String payload) {
+        if (payload == null || payload.isBlank()) {
+            return 0;
         }
 
-        StringBuilder sb = new StringBuilder("🏷️ *Теги*\n\n");
-        for (int i = 0; i < tags.size(); i++) {
-            TagStat t = tags.get(i);
-            sb.append(i + 1)
-                    .append(") #").append(t.name())
-                    .append(" — ").append(t.count())
-                    .append("\n");
+        try {
+            int pageNumber = Integer.parseInt(payload.trim());
+            return Math.max(pageNumber - 1, 0);
+        } catch (NumberFormatException e) {
+            return 0;
         }
-
-        sb.append("\nОткрыть: `/tag <имя>`");
-        sender.sendMarkdown(chatId, sb.toString(), null);
     }
 }

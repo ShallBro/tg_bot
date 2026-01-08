@@ -1,27 +1,23 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
-@RequiredArgsConstructor
 @Order(1)
-public class HelpCommandHandler implements UpdateHandler {
+public class HelpCommandHandler extends SlashCommandHandler {
 
     private final TelegramBotSender sender;
 
-    @Override
-    public boolean supports(Update update) {
-        return update.hasMessage()
-                && update.getMessage().hasText()
-                && update.getMessage().getText().startsWith("/help");
+    public HelpCommandHandler(TelegramBotSender sender) {
+        super("help");
+        this.sender = sender;
     }
 
     @Override
-    public void handle(Update update) {
+    protected void handleCommand(Update update) {
         Long chatId = update.getMessage().getChatId();
 
         String text = """

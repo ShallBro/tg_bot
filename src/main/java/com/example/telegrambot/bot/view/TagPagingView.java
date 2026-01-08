@@ -1,20 +1,26 @@
 package com.example.telegrambot.bot.view;
 
+import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.entity.Note;
 import com.example.telegrambot.service.dto.NoteSlice;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public final class TagPagingView {
+@Component
+@RequiredArgsConstructor
+public class TagPagingView {
 
-    private TagPagingView() {}
+    private final BotMessageService messages;
 
-    public static String buildMessage(String tag, NoteSlice slice) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("🏷️ *#").append(tag).append("* — страница ").append(slice.page() + 1).append("\n\n");
+    public String buildMessage(String tag, NoteSlice slice) {
+        StringBuilder sb = new StringBuilder(
+                messages.text("tag.command.header", tag, slice.page() + 1)
+        ).append("\n\n");
 
         List<Note> items = slice.items();
         for (int i = 0; i < items.size(); i++) {
@@ -25,37 +31,42 @@ public final class TagPagingView {
                     .append("\n");
         }
 
-        sb.append("\nОткрыть: `/note <id>`  •  Удалить: `/delete <id>`");
+        sb.append("\n")
+                .append(messages.text("tag.command.footer"));
         return sb.toString();
     }
 
-    public static InlineKeyboardMarkup buildKeyboard(String tag, NoteSlice slice) {
-        List<InlineKeyboardButton> row = new ArrayList<>();
+    public InlineKeyboardMarkup buildKeyboard(String tag, NoteSlice slice) {
+        List<InlineKeyboardButton> row = new ArrayList<>(2);
 
         if (slice.hasPrev()) {
             row.add(InlineKeyboardButton.builder()
-                    .text("◀️")
-                    .callbackData("tag|" + tag + "|" + (slice.page() - 1))
+                    .text(messages.text("tags.nav.prev"))
+                    .callbackData(TagCallbacks.tagNotes(tag, slice.page() - 1))
                     .build());
         }
 
         if (slice.hasNext()) {
             row.add(InlineKeyboardButton.builder()
-                    .text("▶️")
-                    .callbackData("tag|" + tag + "|" + (slice.page() + 1))
+                    .text(messages.text("tags.nav.next"))
+                    .callbackData(TagCallbacks.tagNotes(tag, slice.page() + 1))
                     .build());
         }
 
-        if (row.isEmpty()) return null;
+        if (row.isEmpty()) {
+            return null;
+        }
 
         return InlineKeyboardMarkup.builder()
                 .keyboard(List.of(row))
                 .build();
     }
 
-    private static String snippet(String text, int max) {
-        if (text == null) return "";
+    private String snippet(String text, int max) {
+        if (text == null) {
+            return "";
+        }
         String t = text.replace("\n", " ").trim();
-        return t.length() <= max ? t : t.substring(0, max - 1) + "…";
+        return t.length() <= max ? t : t.substring(0, max - 1) + "...";
     }
 }
