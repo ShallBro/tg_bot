@@ -1,4 +1,4 @@
-package com.example.telegrambot.bot.view;
+package com.example.telegrambot.bot.callbacks;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;

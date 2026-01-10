@@ -1,7 +1,8 @@
-package com.example.telegrambot.bot.view;
+package com.example.telegrambot.bot.facade;
 
 import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.bot.message.BotMessageService;
+import com.example.telegrambot.bot.view.TagPagingView;
 import com.example.telegrambot.service.NoteService;
 import com.example.telegrambot.service.dto.NoteSlice;
 import lombok.RequiredArgsConstructor;

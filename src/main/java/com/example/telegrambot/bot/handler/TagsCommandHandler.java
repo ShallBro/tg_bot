@@ -1,6 +1,6 @@
 package com.example.telegrambot.bot.handler;
 
-import com.example.telegrambot.bot.view.TagListFacade;
+import com.example.telegrambot.bot.facade.TagListFacade;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;

@@ -1,5 +1,6 @@
 package com.example.telegrambot.bot.view;
 
+import com.example.telegrambot.bot.callbacks.TagCallbacks;
 import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.service.dto.TagSlice;
 import com.example.telegrambot.service.dto.TagStat;

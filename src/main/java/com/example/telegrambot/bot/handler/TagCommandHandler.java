@@ -2,7 +2,7 @@ package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.bot.message.BotMessageService;
-import com.example.telegrambot.bot.view.TagPagingFacade;
+import com.example.telegrambot.bot.facade.TagPagingFacade;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;

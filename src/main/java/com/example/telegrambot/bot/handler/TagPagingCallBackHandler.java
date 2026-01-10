@@ -1,8 +1,8 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
-import com.example.telegrambot.bot.view.TagCallbacks;
-import com.example.telegrambot.bot.view.TagPagingFacade;
+import com.example.telegrambot.bot.callbacks.TagCallbacks;
+import com.example.telegrambot.bot.facade.TagPagingFacade;
 import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
