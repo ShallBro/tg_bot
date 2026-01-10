@@ -73,7 +73,7 @@ public class MediaNoteHandler implements UpdateHandler {
         );
 
         if (messageId.equals(note.getMessageId())) {
-            sender.sendText(chatId, "Заметка сохранена. id: %s".formatted(note.getId()));
+            sender.sendText(chatId, "✅ Заметка сохранена. id: %s".formatted(note.getId()));
         }
     }
 
