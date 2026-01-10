@@ -1,6 +1,7 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
+import com.example.telegrambot.service.NoteService;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -11,22 +12,24 @@ public class HelpCommandHandler extends SlashCommandHandler {
 
     private final TelegramBotSender sender;
 
-    public HelpCommandHandler(TelegramBotSender sender) {
-        super("help");
+    public HelpCommandHandler(TelegramBotSender sender, NoteService noteService) {
+        super("help", noteService, sender);
         this.sender = sender;
     }
 
     @Override
     protected void handleCommand(Update update) {
-        Long chatId = update.getMessage().getChatId();
+        sendHelp(update.getMessage().getChatId());
+    }
 
+    public void sendHelp(Long chatId) {
         String text = """
-                🧠 *MegaBrain* — твой второй мозг в Telegram
-                
+                🧠 *MegaBrain* — твой личный бот для Telegram
+
                 *Как сохранять заметки*
-                Просто отправь текст — я сохраню его как заметку.
-                Можно добавлять теги: #java #работа #идеи
-                
+                Просто отправь текст в чат — он сохранится как заметка.
+                Добавляй хештеги: #java #работа #идеи
+
                 *Команды*
                 • /last — последняя заметка
                 • /note <id> — открыть заметку по ID
@@ -36,9 +39,8 @@ public class HelpCommandHandler extends SlashCommandHandler {
                 • /delete <id> — удалить заметку
                 • /help — эта справка
                 • /menu — меню с основными командами
-                
+
                 *Примеры*
-                • купить молоко #дом
                 • /search liquibase
                 • /tag java
                 • /note 12

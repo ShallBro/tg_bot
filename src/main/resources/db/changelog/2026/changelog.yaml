@@ -2,3 +2,6 @@ databaseChangeLog:
   - include:
       file: 01/001-init-schema.yaml
       relativeToChangelogFile: true
+  - include:
+      file: 01/002-note-attachments.yaml
+      relativeToChangelogFile: true

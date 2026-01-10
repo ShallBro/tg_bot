@@ -23,8 +23,11 @@ public class Note {
     @Column(name = "message_id")
     private Long messageId;
 
-    @Column(name = "text", nullable = false, columnDefinition = "text")
+    @Column(name = "text", columnDefinition = "text")
     private String text;
+
+    @Column(name = "media_group_id")
+    private String mediaGroupId;
 
     @Column(name = "created_at", nullable = false)
     private ZonedDateTime createdAt = ZonedDateTime.now();
@@ -36,4 +39,7 @@ public class Note {
             inverseJoinColumns = @JoinColumn(name = "tag_id")
     )
     private Set<Tag> tags = new HashSet<>();
+
+    @OneToMany(mappedBy = "note", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<NoteAttachment> attachments = new HashSet<>();
 }

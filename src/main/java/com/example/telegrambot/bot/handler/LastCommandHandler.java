@@ -15,20 +15,27 @@ public class LastCommandHandler extends SlashCommandHandler {
     private final TelegramBotSender sender;
 
     public LastCommandHandler(NoteService noteService, TelegramBotSender sender) {
-        super("last");
+        super("last", noteService, sender);
         this.noteService = noteService;
         this.sender = sender;
     }
 
     @Override
     protected void handleCommand(Update update) {
-        Long chatId = update.getMessage().getChatId();
+        sendLast(update.getMessage().getChatId());
+    }
+
+    public void sendLast(Long chatId) {
         Note last = noteService.last(chatId);
+        if (last == null) {
+            sender.sendText(chatId, "Нет сохраненных заметок.");
+            return;
+        }
 
-        String text = last == null
-                ? "Пока нет заметок"
-                : last.getText();
+        if (last.getText() != null && !last.getText().isBlank()) {
+            sender.sendText(chatId, last.getText());
+        }
 
-        sender.sendText(chatId, text);
+        sendAttachments(chatId, last.getId());
     }
 }

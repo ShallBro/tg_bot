@@ -18,6 +18,8 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
 
     Optional<Note> findByIdAndChatId(Long id, Long chatId);
 
+    Optional<Note> findByChatIdAndMediaGroupId(Long chatId, String mediaGroupId);
+
     @Query("""
             select distinct n
             from Note n

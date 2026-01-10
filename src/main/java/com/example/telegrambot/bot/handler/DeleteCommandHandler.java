@@ -18,7 +18,7 @@ public class DeleteCommandHandler extends SlashCommandHandler {
     public DeleteCommandHandler(NoteService noteService,
                                 TelegramBotSender sender,
                                 ExtractIdService extractService) {
-        super("delete");
+        super("delete", noteService, sender);
         this.noteService = noteService;
         this.sender = sender;
         this.extractService = extractService;

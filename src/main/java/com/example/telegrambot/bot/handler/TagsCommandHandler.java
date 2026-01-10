@@ -1,6 +1,8 @@
 package com.example.telegrambot.bot.handler;
 
+import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.bot.facade.TagListFacade;
+import com.example.telegrambot.service.NoteService;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -11,8 +13,8 @@ public class TagsCommandHandler extends SlashCommandHandler {
 
     private final TagListFacade tagListFacade;
 
-    public TagsCommandHandler(TagListFacade tagListFacade) {
-        super("tags");
+    public TagsCommandHandler(TagListFacade tagListFacade, NoteService noteService, TelegramBotSender sender) {
+        super("tags", noteService, sender);
         this.tagListFacade = tagListFacade;
     }
 

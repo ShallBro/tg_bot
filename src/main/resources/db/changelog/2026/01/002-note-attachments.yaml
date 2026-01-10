@@ -1,0 +1,79 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-note-attachments
+      author: Artem B
+      changes:
+        - addColumn:
+            tableName: notes
+            columns:
+              - column:
+                  name: media_group_id
+                  type: VARCHAR(64)
+        - dropNotNullConstraint:
+            tableName: notes
+            columnName: text
+            columnDataType: TEXT
+
+        - createTable:
+            tableName: note_attachments
+            columns:
+              - column:
+                  name: id
+                  type: BIGSERIAL
+                  constraints:
+                    primaryKey: true
+              - column:
+                  name: note_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR(16)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_id
+                  type: TEXT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: file_unique_id
+                  type: TEXT
+              - column:
+                  name: file_name
+                  type: TEXT
+              - column:
+                  name: mime_type
+                  type: TEXT
+              - column:
+                  name: file_size
+                  type: BIGINT
+              - column:
+                  name: created_at
+                  type: TIMESTAMPTZ
+                  defaultValueComputed: now()
+
+        - addForeignKeyConstraint:
+            baseTableName: note_attachments
+            baseColumnNames: note_id
+            referencedTableName: notes
+            referencedColumnNames: id
+            onDelete: CASCADE
+            constraintName: fk_note_attachments_note
+
+        - createIndex:
+            tableName: note_attachments
+            indexName: idx_note_attachments_note
+            columns:
+              - column:
+                  name: note_id
+
+        - createIndex:
+            tableName: notes
+            indexName: idx_notes_chat_media_group
+            columns:
+              - column:
+                  name: chat_id
+              - column:
+                  name: media_group_id

@@ -1,7 +1,9 @@
 package com.example.telegrambot.service;
 
 import com.example.telegrambot.entity.Note;
+import com.example.telegrambot.entity.NoteAttachment;
 import com.example.telegrambot.entity.Tag;
+import com.example.telegrambot.repository.NoteAttachmentRepository;
 import com.example.telegrambot.repository.NoteRepository;
 import com.example.telegrambot.repository.TagRepository;
 import com.example.telegrambot.service.dto.NoteSlice;
@@ -19,7 +21,10 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class NoteService {
 
+    private static final int MAX_ATTACHMENTS = 10;
+
     private final NoteRepository noteRepository;
+    private final NoteAttachmentRepository noteAttachmentRepository;
     private final TagRepository tagRepository;
     private final TagParser tagParser;
 
@@ -42,13 +47,44 @@ public class NoteService {
         note.setMessageId(messageId);
         note.setText(text);
 
-        Set<String> tags = tagParser.parse(text);
-        for (String tag : tags) {
-            Tag tagEntity = tagRepository.findByName(tag).orElseGet(() -> tagRepository.save(new Tag(tag)));
-            note.getTags().add(tagEntity);
-        }
+        applyTags(note, text);
 
         return noteRepository.save(note);
+    }
+
+    @Transactional
+    public Note saveMediaNote(Long chatId,
+                              Long messageId,
+                              String text,
+                              String mediaGroupId,
+                              List<NoteAttachmentPayload> attachments) {
+        Note note = resolveMediaNote(chatId, messageId, text, mediaGroupId);
+
+        if (attachments == null || attachments.isEmpty()) {
+            return note;
+        }
+
+        long existingCount = noteAttachmentRepository.countByNoteId(note.getId());
+        int allowed = Math.max(0, MAX_ATTACHMENTS - (int) existingCount);
+        if (allowed == 0) {
+            return note;
+        }
+
+        List<NoteAttachmentPayload> bounded = attachments.size() > allowed
+                ? attachments.subList(0, allowed)
+                : attachments;
+
+        List<NoteAttachment> entities = bounded.stream()
+                .map(payload -> toAttachment(note, payload))
+                .toList();
+
+        noteAttachmentRepository.saveAll(entities);
+        return note;
+    }
+
+    @Transactional(readOnly = true)
+    public List<NoteAttachment> getAttachments(Long noteId) {
+        return noteAttachmentRepository.findByNoteIdOrderByIdAsc(noteId);
     }
 
     @Transactional(readOnly = true)
@@ -74,5 +110,70 @@ public class NoteService {
         if (note.isEmpty()) return false;
         noteRepository.delete(note.get());
         return true;
+    }
+
+    private Note resolveMediaNote(Long chatId, Long messageId, String text, String mediaGroupId) {
+        Note note;
+        if (mediaGroupId != null && !mediaGroupId.isBlank()) {
+            note = noteRepository.findByChatIdAndMediaGroupId(chatId, mediaGroupId)
+                    .orElseGet(() -> {
+                        Note fresh = new Note();
+                        fresh.setChatId(chatId);
+                        fresh.setMessageId(messageId);
+                        fresh.setMediaGroupId(mediaGroupId);
+                        fresh.setText(text);
+                        return fresh;
+                    });
+        } else {
+            note = new Note();
+            note.setChatId(chatId);
+            note.setMessageId(messageId);
+            note.setText(text);
+        }
+
+        if (note.getId() == null) {
+            applyTags(note, text);
+            return noteRepository.save(note);
+        }
+
+        if (note.getText() == null || note.getText().isBlank()) {
+            if (text != null && !text.isBlank()) {
+                note.setText(text);
+                applyTags(note, text);
+                noteRepository.save(note);
+            }
+        }
+
+        return note;
+    }
+
+    private void applyTags(Note note, String text) {
+        Set<String> tags = tagParser.parse(text);
+        for (String tag : tags) {
+            Tag tagEntity = tagRepository.findByName(tag).orElseGet(() -> tagRepository.save(new Tag(tag)));
+            note.getTags().add(tagEntity);
+        }
+    }
+
+    public record NoteAttachmentPayload(
+            String type,
+            String fileId,
+            String fileUniqueId,
+            String fileName,
+            String mimeType,
+            Long fileSize
+    ) {
+    }
+
+    private NoteAttachment toAttachment(Note note, NoteAttachmentPayload payload) {
+        NoteAttachment attachment = new NoteAttachment();
+        attachment.setNote(note);
+        attachment.setType(payload.type());
+        attachment.setFileId(payload.fileId());
+        attachment.setFileUniqueId(payload.fileUniqueId());
+        attachment.setFileName(payload.fileName());
+        attachment.setMimeType(payload.mimeType());
+        attachment.setFileSize(payload.fileSize());
+        return attachment;
     }
 }

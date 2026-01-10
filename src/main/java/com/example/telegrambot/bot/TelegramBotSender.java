@@ -5,8 +5,11 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.DefaultAbsSender;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 @Component
@@ -52,6 +55,28 @@ public class TelegramBotSender {
 
             if (markup != null) editMessageTextBuilder.replyMarkup(markup);
             telegramSender.execute(editMessageTextBuilder.build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendPhoto(Long chatId, String fileId) {
+        try {
+            telegramSender.execute(SendPhoto.builder()
+                    .chatId(chatId.toString())
+                    .photo(new InputFile(fileId))
+                    .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendDocument(Long chatId, String fileId) {
+        try {
+            telegramSender.execute(SendDocument.builder()
+                    .chatId(chatId.toString())
+                    .document(new InputFile(fileId))
+                    .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

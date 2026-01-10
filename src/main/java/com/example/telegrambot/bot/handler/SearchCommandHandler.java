@@ -16,7 +16,7 @@ public class SearchCommandHandler extends SlashCommandHandler {
     private final TelegramBotSender sender;
 
     public SearchCommandHandler(NoteService noteService, TelegramBotSender sender) {
-        super("search");
+        super("search", noteService, sender);
         this.noteService = noteService;
         this.sender = sender;
     }

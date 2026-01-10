@@ -10,7 +10,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 @RequiredArgsConstructor
-@Order(5)
+@Order(6)
 public class TextNoteHandler implements UpdateHandler {
 
     private final NoteService noteService;

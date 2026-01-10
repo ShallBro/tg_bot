@@ -10,8 +10,6 @@ import org.telegram.telegrambots.meta.api.objects.MaybeInaccessibleMessage;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
-import java.util.Optional;
-
 @Component
 @Order(7)
 @RequiredArgsConstructor
@@ -34,31 +32,25 @@ public class MenuCallbackHandler implements UpdateHandler {
         var callbackQuery = update.getCallbackQuery();
         sender.answerCallback(callbackQuery.getId());
 
+        Long chatId = resolveChatId(callbackQuery.getMessage());
+        if (chatId == null) {
+            return;
+        }
+
         MenuCallbacks.parse(callbackQuery.getData())
                 .ifPresent(action -> {
-                    Optional<Update> wrapped = wrapMessage(callbackQuery.getMessage());
-                    if (wrapped.isEmpty()) {
-                        return;
-                    }
-
-                    Update wrappedUpdate = wrapped.get();
                     switch (action) {
-                        case LAST -> lastCommandHandler.handle(wrappedUpdate);
-                        case HELP -> helpCommandHandler.handle(wrappedUpdate);
-                        case TAGS -> tagListFacade.sendPage(
-                                wrappedUpdate.getMessage().getChatId(),
-                                0
-                        );
+                        case LAST -> lastCommandHandler.sendLast(chatId);
+                        case HELP -> helpCommandHandler.sendHelp(chatId);
+                        case TAGS -> tagListFacade.sendPage(chatId, 0);
                     }
                 });
     }
 
-    private Optional<Update> wrapMessage(MaybeInaccessibleMessage message) {
+    private Long resolveChatId(MaybeInaccessibleMessage message) {
         if (message instanceof Message accessible) {
-            Update update = new Update();
-            update.setMessage(accessible);
-            return Optional.of(update);
+            return accessible.getChatId();
         }
-        return Optional.empty();
+        return null;
     }
 }

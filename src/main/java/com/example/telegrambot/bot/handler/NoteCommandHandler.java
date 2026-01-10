@@ -18,7 +18,7 @@ public class NoteCommandHandler extends SlashCommandHandler {
     public NoteCommandHandler(NoteService noteService,
                               TelegramBotSender sender,
                               ExtractIdService extractService) {
-        super("note");
+        super("note", noteService, sender);
         this.noteService = noteService;
         this.sender = sender;
         this.extractService = extractService;
@@ -36,12 +36,15 @@ public class NoteCommandHandler extends SlashCommandHandler {
 
         noteService.findNote(chatId, id)
                 .ifPresentOrElse(
-                        note -> sender.sendText(chatId,
-                                "🧠 Заметка #" + note.getId() + "\n\n" + note.getText()
-                        ),
-                        () -> sender.sendText(chatId,
-                                "❌ Заметка с ID " + id + " не найдена"
-                        )
+                        note -> {
+                            if (note.getText() != null && !note.getText().isBlank()) {
+                                sender.sendText(chatId, "Заметка #" + note.getId() + "\n\n" + note.getText());
+                            } else {
+                                sender.sendText(chatId, "Заметка #" + note.getId());
+                            }
+                            sendAttachments(chatId, note.getId());
+                        },
+                        () -> sender.sendText(chatId, "Заметка с ID " + id + " не найдена")
                 );
     }
 }
