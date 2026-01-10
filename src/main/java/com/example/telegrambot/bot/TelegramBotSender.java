@@ -14,8 +14,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 public class TelegramBotSender {
     private final DefaultAbsSender telegramSender;
 
-    public void sendMarkdown(Long chatId, String markdown,  InlineKeyboardMarkup markup) {
-        send(chatId, markdown, ParseMode.MARKDOWN, markup);
+    public void sendMarkdown(Long chatId, String text,  InlineKeyboardMarkup markup) {
+        send(chatId, text, ParseMode.MARKDOWN, markup);
     }
 
     public void sendText(Long chatId, String text) {

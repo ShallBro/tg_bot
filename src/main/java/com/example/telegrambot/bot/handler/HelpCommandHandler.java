@@ -35,6 +35,7 @@ public class HelpCommandHandler extends SlashCommandHandler {
                 • /tags — список тегов
                 • /delete <id> — удалить заметку
                 • /help — эта справка
+                • /menu — меню с основными командами
                 
                 *Примеры*
                 • купить молоко #дом
