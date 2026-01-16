@@ -1,9 +1,11 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
-import com.example.telegrambot.bot.callbacks.MenuCallbacks;
+import com.example.telegrambot.bot.callbacks.CallbackCodec;
+import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
+import com.example.telegrambot.bot.callbacks.CallbackType;
+import com.example.telegrambot.bot.callbacks.MenuCallbackCodec;
 import com.example.telegrambot.bot.facade.TagListFacade;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.MaybeInaccessibleMessage;
@@ -12,13 +14,25 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 @Order(7)
-@RequiredArgsConstructor
 public class MenuCallbackHandler implements UpdateHandler {
 
     private final TelegramBotSender sender;
     private final HelpCommandHandler helpCommandHandler;
     private final LastCommandHandler lastCommandHandler;
     private final TagListFacade tagListFacade;
+    private final CallbackCodec<MenuCallbackCodec.MenuAction> menuCallbackCodec;
+
+    public MenuCallbackHandler(TelegramBotSender sender,
+                               HelpCommandHandler helpCommandHandler,
+                               LastCommandHandler lastCommandHandler,
+                               TagListFacade tagListFacade,
+                               CallbackCodecRegistry registry) {
+        this.sender = sender;
+        this.helpCommandHandler = helpCommandHandler;
+        this.lastCommandHandler = lastCommandHandler;
+        this.tagListFacade = tagListFacade;
+        this.menuCallbackCodec = registry.get(CallbackType.MENU);
+    }
 
     @Override
     public boolean supports(Update update) {
@@ -37,7 +51,7 @@ public class MenuCallbackHandler implements UpdateHandler {
             return;
         }
 
-        MenuCallbacks.parse(callbackQuery.getData())
+        menuCallbackCodec.decode(callbackQuery.getData())
                 .ifPresent(action -> {
                     switch (action) {
                         case LAST -> lastCommandHandler.sendLast(chatId);

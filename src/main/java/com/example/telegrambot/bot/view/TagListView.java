@@ -1,10 +1,12 @@
 package com.example.telegrambot.bot.view;
 
-import com.example.telegrambot.bot.callbacks.TagCallbacks;
+import com.example.telegrambot.bot.callbacks.CallbackCodec;
+import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
+import com.example.telegrambot.bot.callbacks.CallbackType;
+import com.example.telegrambot.bot.callbacks.TagPagePayload;
 import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.service.dto.TagSlice;
 import com.example.telegrambot.service.dto.TagStat;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -13,10 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class TagListView {
 
     private final BotMessageService messages;
+    private final CallbackCodec<TagPagePayload> tagNotesCallbackCodec;
+    private final CallbackCodec<Integer> tagsPageCallbackCodec;
+
+    public TagListView(BotMessageService messages, CallbackCodecRegistry registry) {
+        this.messages = messages;
+        this.tagNotesCallbackCodec = registry.get(CallbackType.TAG_NOTES);
+        this.tagsPageCallbackCodec = registry.get(CallbackType.TAGS_PAGE);
+    }
 
     public String buildMessage(TagSlice slice) {
         StringBuilder sb = new StringBuilder(messages.text("tags.list.title"))
@@ -48,7 +57,7 @@ public class TagListView {
         for (TagStat tag : slice.items()) {
             row.add(InlineKeyboardButton.builder()
                     .text("#" + tag.name())
-                    .callbackData(TagCallbacks.tagNotes(tag.name(), 0))
+                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag.name(), 0)))
                     .build());
 
             if (row.size() == 2) {
@@ -65,13 +74,13 @@ public class TagListView {
         if (slice.hasPrev()) {
             navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.prev"))
-                    .callbackData(TagCallbacks.tagsPage(slice.page() - 1))
+                    .callbackData(tagsPageCallbackCodec.encode(slice.page() - 1))
                     .build());
         }
         if (slice.hasNext()) {
             navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.next"))
-                    .callbackData(TagCallbacks.tagsPage(slice.page() + 1))
+                    .callbackData(tagsPageCallbackCodec.encode(slice.page() + 1))
                     .build());
         }
         if (!navRow.isEmpty()) {

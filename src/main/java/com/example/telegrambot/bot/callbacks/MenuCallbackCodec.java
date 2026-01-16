@@ -1,20 +1,32 @@
 package com.example.telegrambot.bot.callbacks;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Locale;
 import java.util.Optional;
 
-public final class MenuCallbacks {
+@Component
+public final class MenuCallbackCodec implements CallbackCodec<MenuCallbackCodec.MenuAction> {
 
     private static final String PREFIX = "menu|";
 
-    private MenuCallbacks() {
+    @Override
+    public CallbackType type() {
+        return CallbackType.MENU;
     }
 
-    public static String action(MenuAction action) {
+    @Override
+    public Class<MenuAction> valueType() {
+        return MenuAction.class;
+    }
+
+    @Override
+    public String encode(MenuAction action) {
         return PREFIX + action.name().toLowerCase(Locale.ROOT);
     }
 
-    public static Optional<MenuAction> parse(String data) {
+    @Override
+    public Optional<MenuAction> decode(String data) {
         if (data == null || !data.startsWith(PREFIX)) {
             return Optional.empty();
         }

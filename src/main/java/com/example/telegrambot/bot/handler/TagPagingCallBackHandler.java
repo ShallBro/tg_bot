@@ -1,20 +1,30 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
-import com.example.telegrambot.bot.callbacks.TagCallbacks;
+import com.example.telegrambot.bot.callbacks.CallbackCodec;
+import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
+import com.example.telegrambot.bot.callbacks.CallbackType;
+import com.example.telegrambot.bot.callbacks.TagPagePayload;
 import com.example.telegrambot.bot.facade.TagPagingFacade;
-import lombok.RequiredArgsConstructor;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Order(10)
 @Component
-@RequiredArgsConstructor
 public class TagPagingCallBackHandler implements UpdateHandler {
 
     private final TelegramBotSender sender;
     private final TagPagingFacade tagPagingFacade;
+    private final CallbackCodec<TagPagePayload> tagNotesCallbackCodec;
+
+    public TagPagingCallBackHandler(TelegramBotSender sender,
+                                    TagPagingFacade tagPagingFacade,
+                                    CallbackCodecRegistry registry) {
+        this.sender = sender;
+        this.tagPagingFacade = tagPagingFacade;
+        this.tagNotesCallbackCodec = registry.get(CallbackType.TAG_NOTES);
+    }
 
     @Override
     public boolean supports(Update update) {
@@ -28,7 +38,7 @@ public class TagPagingCallBackHandler implements UpdateHandler {
         var callbackQuery = update.getCallbackQuery();
         sender.answerCallback(callbackQuery.getId());
 
-        TagCallbacks.parseTagNotes(callbackQuery.getData())
+        tagNotesCallbackCodec.decode(callbackQuery.getData())
                 .ifPresent(payload -> tagPagingFacade.render(
                         callbackQuery.getMessage().getChatId(),
                         callbackQuery.getMessage().getMessageId(),

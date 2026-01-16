@@ -1,11 +1,12 @@
 package com.example.telegrambot.bot.view;
 
-import com.example.telegrambot.bot.callbacks.NoteCallbacks;
-import com.example.telegrambot.bot.callbacks.TagCallbacks;
+import com.example.telegrambot.bot.callbacks.CallbackCodec;
+import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
+import com.example.telegrambot.bot.callbacks.CallbackType;
+import com.example.telegrambot.bot.callbacks.TagPagePayload;
 import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.entity.Note;
 import com.example.telegrambot.service.dto.NoteSlice;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -14,10 +15,17 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-@RequiredArgsConstructor
 public class TagPagingView {
 
     private final BotMessageService messages;
+    private final CallbackCodec<Long> noteCallbackCodec;
+    private final CallbackCodec<TagPagePayload> tagNotesCallbackCodec;
+
+    public TagPagingView(BotMessageService messages, CallbackCodecRegistry registry) {
+        this.messages = messages;
+        this.noteCallbackCodec = registry.get(CallbackType.NOTE);
+        this.tagNotesCallbackCodec = registry.get(CallbackType.TAG_NOTES);
+    }
 
     public String buildMessage(String tag, NoteSlice slice) {
         StringBuilder sb = new StringBuilder(
@@ -45,7 +53,7 @@ public class TagPagingView {
         for (Note note : slice.items()) {
             row.add(InlineKeyboardButton.builder()
                     .text(String.valueOf(note.getId()))
-                    .callbackData(NoteCallbacks.note(note.getId()))
+                    .callbackData(noteCallbackCodec.encode(note.getId()))
                     .build());
 
             if (row.size() == 2) {
@@ -63,14 +71,14 @@ public class TagPagingView {
         if (slice.hasPrev()) {
             navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.prev"))
-                    .callbackData(TagCallbacks.tagNotes(tag, slice.page() - 1))
+                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag, slice.page() - 1)))
                     .build());
         }
 
         if (slice.hasNext()) {
             navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.next"))
-                    .callbackData(TagCallbacks.tagNotes(tag, slice.page() + 1))
+                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag, slice.page() + 1)))
                     .build());
         }
 

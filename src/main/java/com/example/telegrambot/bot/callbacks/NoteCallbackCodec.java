@@ -1,19 +1,31 @@
 package com.example.telegrambot.bot.callbacks;
 
+import org.springframework.stereotype.Component;
+
 import java.util.Optional;
 
-public final class NoteCallbacks {
+@Component
+public final class NoteCallbackCodec implements CallbackCodec<Long> {
 
     private static final String PREFIX = "note|";
 
-    private NoteCallbacks() {
+    @Override
+    public CallbackType type() {
+        return CallbackType.NOTE;
     }
 
-    public static String note(Long id) {
+    @Override
+    public Class<Long> valueType() {
+        return Long.class;
+    }
+
+    @Override
+    public String encode(Long id) {
         return PREFIX + id;
     }
 
-    public static Optional<Long> parse(String data) {
+    @Override
+    public Optional<Long> decode(String data) {
         if (data == null || !data.startsWith(PREFIX)) {
             return Optional.empty();
         }

@@ -1,8 +1,9 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
-import com.example.telegrambot.bot.callbacks.NoteCallbacks;
-import lombok.RequiredArgsConstructor;
+import com.example.telegrambot.bot.callbacks.CallbackCodec;
+import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
+import com.example.telegrambot.bot.callbacks.CallbackType;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.MaybeInaccessibleMessage;
@@ -11,11 +12,19 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 
 @Component
 @Order(9)
-@RequiredArgsConstructor
 public class NoteCallbackHandler implements UpdateHandler {
 
     private final TelegramBotSender sender;
     private final NoteCommandHandler noteCommandHandler;
+    private final CallbackCodec<Long> noteCallbackCodec;
+
+    public NoteCallbackHandler(TelegramBotSender sender,
+                               NoteCommandHandler noteCommandHandler,
+                               CallbackCodecRegistry registry) {
+        this.sender = sender;
+        this.noteCommandHandler = noteCommandHandler;
+        this.noteCallbackCodec = registry.get(CallbackType.NOTE);
+    }
 
     @Override
     public boolean supports(Update update) {
@@ -34,7 +43,7 @@ public class NoteCallbackHandler implements UpdateHandler {
             return;
         }
 
-        NoteCallbacks.parse(callbackQuery.getData())
+        noteCallbackCodec.decode(callbackQuery.getData())
                 .ifPresent(noteId -> noteCommandHandler.sendNote(chatId, noteId));
     }
 
