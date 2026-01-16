@@ -1,11 +1,14 @@
 package com.example.telegrambot.bot.handler;
 
 import com.example.telegrambot.bot.TelegramBotSender;
+import com.example.telegrambot.entity.NoteAttachment;
 import com.example.telegrambot.service.ExtractIdService;
 import com.example.telegrambot.service.NoteService;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Update;
+
+import java.util.List;
 
 @Component
 @Order(3)
@@ -34,13 +37,17 @@ public class NoteCommandHandler extends SlashCommandHandler {
             return;
         }
 
+        sendNote(chatId, id);
+    }
+
+    public void sendNote(Long chatId, Long id) {
         noteService.findNote(chatId, id)
                 .ifPresentOrElse(
                         note -> {
                             if (note.getText() != null && !note.getText().isBlank()) {
-                                sender.sendText(chatId, "🧠 Заметка #" + note.getId() + "\n\n" + note.getText());
+                                sender.sendText(chatId, "Заметка #" + note.getId() + "\n\n" + note.getText());
                             } else {
-                                sender.sendText(chatId, "🧠 Заметка #" + note.getId());
+                                sender.sendText(chatId, "Заметка #" + note.getId());
                             }
                             sendAttachments(chatId, note.getId());
                         },

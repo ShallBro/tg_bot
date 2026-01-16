@@ -1,5 +1,6 @@
 package com.example.telegrambot.bot.view;
 
+import com.example.telegrambot.bot.callbacks.NoteCallbacks;
 import com.example.telegrambot.bot.callbacks.TagCallbacks;
 import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.entity.Note;
@@ -38,28 +39,49 @@ public class TagPagingView {
     }
 
     public InlineKeyboardMarkup buildKeyboard(String tag, NoteSlice slice) {
+        List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
+
         List<InlineKeyboardButton> row = new ArrayList<>(2);
+        for (Note note : slice.items()) {
+            row.add(InlineKeyboardButton.builder()
+                    .text(String.valueOf(note.getId()))
+                    .callbackData(NoteCallbacks.note(note.getId()))
+                    .build());
+
+            if (row.size() == 2) {
+                keyboard.add(row);
+                row = new ArrayList<>(2);
+            }
+        }
+
+        if (!row.isEmpty()) {
+            keyboard.add(row);
+        }
+
+        List<InlineKeyboardButton> navRow = new ArrayList<>(2);
 
         if (slice.hasPrev()) {
-            row.add(InlineKeyboardButton.builder()
+            navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.prev"))
                     .callbackData(TagCallbacks.tagNotes(tag, slice.page() - 1))
                     .build());
         }
 
         if (slice.hasNext()) {
-            row.add(InlineKeyboardButton.builder()
+            navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.next"))
                     .callbackData(TagCallbacks.tagNotes(tag, slice.page() + 1))
                     .build());
         }
 
-        if (row.isEmpty()) {
-            return null;
+        if (!navRow.isEmpty()) {
+            keyboard.add(navRow);
         }
 
-        return InlineKeyboardMarkup.builder()
-                .keyboard(List.of(row))
+        return keyboard.isEmpty()
+                ? null
+                : InlineKeyboardMarkup.builder()
+                .keyboard(keyboard)
                 .build();
     }
 
