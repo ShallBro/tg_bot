@@ -15,11 +15,6 @@ public final class NoteCallbackCodec implements CallbackCodec<Long> {
     }
 
     @Override
-    public Class<Long> valueType() {
-        return Long.class;
-    }
-
-    @Override
     public String encode(Long id) {
         return PREFIX + id;
     }

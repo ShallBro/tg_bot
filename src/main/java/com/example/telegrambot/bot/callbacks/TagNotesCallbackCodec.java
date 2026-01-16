@@ -19,11 +19,6 @@ public final class TagNotesCallbackCodec implements CallbackCodec<TagPagePayload
     }
 
     @Override
-    public Class<TagPagePayload> valueType() {
-        return TagPagePayload.class;
-    }
-
-    @Override
     public String encode(TagPagePayload payload) {
         return PREFIX + encodeTag(payload.tag()) + "|" + payload.page();
     }

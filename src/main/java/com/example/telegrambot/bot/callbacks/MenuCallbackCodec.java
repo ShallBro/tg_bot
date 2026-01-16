@@ -15,10 +15,6 @@ public final class MenuCallbackCodec implements CallbackCodec<MenuCallbackCodec.
         return CallbackType.MENU;
     }
 
-    @Override
-    public Class<MenuAction> valueType() {
-        return MenuAction.class;
-    }
 
     @Override
     public String encode(MenuAction action) {

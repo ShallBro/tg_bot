@@ -15,11 +15,6 @@ public final class TagsPageCallbackCodec implements CallbackCodec<Integer> {
     }
 
     @Override
-    public Class<Integer> valueType() {
-        return Integer.class;
-    }
-
-    @Override
     public String encode(Integer page) {
         return PREFIX + page;
     }
