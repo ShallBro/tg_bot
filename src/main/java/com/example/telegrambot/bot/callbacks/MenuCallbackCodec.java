@@ -6,7 +6,7 @@ import java.util.Locale;
 import java.util.Optional;
 
 @Component
-public final class MenuCallbackCodec implements CallbackCodec<MenuCallbackCodec.MenuAction> {
+public final class MenuCallbackCodec implements CallbackCodec<MenuAction> {
 
     private static final String PREFIX = "menu|";
 
@@ -37,11 +37,5 @@ public final class MenuCallbackCodec implements CallbackCodec<MenuCallbackCodec.
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
-    }
-
-    public enum MenuAction {
-        LAST,
-        HELP,
-        TAGS
     }
 }

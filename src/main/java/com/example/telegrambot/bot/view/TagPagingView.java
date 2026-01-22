@@ -3,6 +3,7 @@ package com.example.telegrambot.bot.view;
 import com.example.telegrambot.bot.callbacks.CallbackCodec;
 import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
 import com.example.telegrambot.bot.callbacks.CallbackType;
+import com.example.telegrambot.bot.callbacks.MenuAction;
 import com.example.telegrambot.bot.callbacks.TagPagePayload;
 import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.entity.Note;
@@ -20,11 +21,13 @@ public class TagPagingView {
     private final BotMessageService messages;
     private final CallbackCodec<Long> noteCallbackCodec;
     private final CallbackCodec<TagPagePayload> tagNotesCallbackCodec;
+    private final CallbackCodec<MenuAction> menuCallbackCodec;
 
     public TagPagingView(BotMessageService messages, CallbackCodecRegistry registry) {
         this.messages = messages;
         this.noteCallbackCodec = registry.get(CallbackType.NOTE);
         this.tagNotesCallbackCodec = registry.get(CallbackType.TAG_NOTES);
+        this.menuCallbackCodec = registry.get(CallbackType.MENU);
     }
 
     public String buildMessage(String tag, NoteSlice slice) {
@@ -85,6 +88,11 @@ public class TagPagingView {
         if (!navRow.isEmpty()) {
             keyboard.add(navRow);
         }
+
+        keyboard.add(List.of(InlineKeyboardButton.builder()
+                .text(messages.text("menu.button.back"))
+                .callbackData(menuCallbackCodec.encode(MenuAction.BACK))
+                .build()));
 
         return keyboard.isEmpty()
                 ? null

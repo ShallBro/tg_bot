@@ -3,7 +3,7 @@ package com.example.telegrambot.bot.view;
 import com.example.telegrambot.bot.callbacks.CallbackCodec;
 import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
 import com.example.telegrambot.bot.callbacks.CallbackType;
-import com.example.telegrambot.bot.callbacks.MenuCallbackCodec;
+import com.example.telegrambot.bot.callbacks.MenuAction;
 import com.example.telegrambot.bot.message.BotMessageService;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
@@ -16,7 +16,7 @@ import java.util.List;
 public class MenuView {
 
     private final BotMessageService messages;
-    private final CallbackCodec<MenuCallbackCodec.MenuAction> menuCallbackCodec;
+    private final CallbackCodec<MenuAction> menuCallbackCodec;
 
     public MenuView(BotMessageService messages, CallbackCodecRegistry registry) {
         this.messages = messages;
@@ -33,17 +33,17 @@ public class MenuView {
         List<InlineKeyboardButton> row = new ArrayList<>(2);
         row.add(InlineKeyboardButton.builder()
                 .text(messages.text("menu.button.last"))
-                .callbackData(menuCallbackCodec.encode(MenuCallbackCodec.MenuAction.LAST))
+                .callbackData(menuCallbackCodec.encode(MenuAction.LAST))
                 .build());
         row.add(InlineKeyboardButton.builder()
                 .text(messages.text("menu.button.tags"))
-                .callbackData(menuCallbackCodec.encode(MenuCallbackCodec.MenuAction.TAGS))
+                .callbackData(menuCallbackCodec.encode(MenuAction.TAGS))
                 .build());
         keyboard.add(row);
 
         keyboard.add(List.of(InlineKeyboardButton.builder()
                 .text(messages.text("menu.button.help"))
-                .callbackData(menuCallbackCodec.encode(MenuCallbackCodec.MenuAction.HELP))
+                .callbackData(menuCallbackCodec.encode(MenuAction.HELP))
                 .build()));
 
         return InlineKeyboardMarkup.builder().keyboard(keyboard).build();

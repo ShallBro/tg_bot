@@ -4,7 +4,8 @@ import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.bot.callbacks.CallbackCodec;
 import com.example.telegrambot.bot.callbacks.CallbackCodecRegistry;
 import com.example.telegrambot.bot.callbacks.CallbackType;
-import com.example.telegrambot.bot.callbacks.MenuCallbackCodec;
+import com.example.telegrambot.bot.callbacks.MenuAction;
+import com.example.telegrambot.bot.facade.MenuFacade;
 import com.example.telegrambot.bot.facade.TagListFacade;
 import org.junit.jupiter.api.Order;
 import org.springframework.stereotype.Component;
@@ -19,17 +20,20 @@ public class MenuCallbackHandler implements UpdateHandler {
     private final TelegramBotSender sender;
     private final HelpCommandHandler helpCommandHandler;
     private final LastCommandHandler lastCommandHandler;
+    private final MenuFacade menuFacade;
     private final TagListFacade tagListFacade;
-    private final CallbackCodec<MenuCallbackCodec.MenuAction> menuCallbackCodec;
+    private final CallbackCodec<MenuAction> menuCallbackCodec;
 
     public MenuCallbackHandler(TelegramBotSender sender,
                                HelpCommandHandler helpCommandHandler,
                                LastCommandHandler lastCommandHandler,
+                               MenuFacade menuFacade,
                                TagListFacade tagListFacade,
                                CallbackCodecRegistry registry) {
         this.sender = sender;
         this.helpCommandHandler = helpCommandHandler;
         this.lastCommandHandler = lastCommandHandler;
+        this.menuFacade = menuFacade;
         this.tagListFacade = tagListFacade;
         this.menuCallbackCodec = registry.get(CallbackType.MENU);
     }
@@ -46,24 +50,29 @@ public class MenuCallbackHandler implements UpdateHandler {
         var callbackQuery = update.getCallbackQuery();
         sender.answerCallback(callbackQuery.getId());
 
-        Long chatId = resolveChatId(callbackQuery.getMessage());
-        if (chatId == null) {
+        Message message = resolveMessage(callbackQuery.getMessage());
+        if (message == null) {
             return;
         }
 
         menuCallbackCodec.decode(callbackQuery.getData())
                 .ifPresent(action -> {
+                    Long chatId = message.getChatId();
                     switch (action) {
                         case LAST -> lastCommandHandler.sendLast(chatId);
                         case HELP -> helpCommandHandler.sendHelp(chatId);
                         case TAGS -> tagListFacade.sendPage(chatId, 0);
+                        case BACK -> {
+                            sender.deleteMessage(chatId, message.getMessageId());
+                            menuFacade.sendMenu(chatId);
+                        }
                     }
                 });
     }
 
-    private Long resolveChatId(MaybeInaccessibleMessage message) {
+    private Message resolveMessage(MaybeInaccessibleMessage message) {
         if (message instanceof Message accessible) {
-            return accessible.getChatId();
+            return accessible;
         }
         return null;
     }

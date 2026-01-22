@@ -9,6 +9,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
@@ -76,6 +77,17 @@ public class TelegramBotSender {
             telegramSender.execute(SendDocument.builder()
                     .chatId(chatId.toString())
                     .document(new InputFile(fileId))
+                    .build());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteMessage(Long chatId, Integer messageId) {
+        try {
+            telegramSender.execute(DeleteMessage.builder()
+                    .chatId(chatId.toString())
+                    .messageId(messageId)
                     .build());
         } catch (Exception e) {
             throw new RuntimeException(e);
