@@ -44,4 +44,14 @@ public interface NoteRepository extends JpaRepository<Note, Long> {
     List<Note> findByChatIdAndTextContains(@Param("chatId") Long chatId,
                                            @Param("q") String query);
 
+    @Query("""
+    select distinct n
+    from Note n
+    join n.tags t
+    where n.chatId = :chatId
+      and t.id = :tagId
+    order by n.createdAt desc
+    """)
+    List<Note> findLatestByTagId(Long chatId, Long tagId, Pageable pageable);
+
 }

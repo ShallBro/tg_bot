@@ -10,8 +10,6 @@ import java.util.Optional;
 public final class TagNotesCallbackCodec implements CallbackCodec<TagPagePayload> {
 
     private static final String PREFIX = "tag|";
-    private static final Base64.Encoder ENCODER = Base64.getUrlEncoder().withoutPadding();
-    private static final Base64.Decoder DECODER = Base64.getUrlDecoder();
 
     @Override
     public CallbackType type() {
@@ -20,7 +18,7 @@ public final class TagNotesCallbackCodec implements CallbackCodec<TagPagePayload
 
     @Override
     public String encode(TagPagePayload payload) {
-        return PREFIX + encodeTag(payload.tag()) + "|" + payload.page();
+        return PREFIX + payload.tagId() + "|" + payload.page();
     }
 
     @Override
@@ -35,19 +33,11 @@ public final class TagNotesCallbackCodec implements CallbackCodec<TagPagePayload
         }
 
         try {
-            String tag = decodeTag(parts[1]);
+            long tagId = Long.parseLong(parts[1]);
             int page = Integer.parseInt(parts[2]);
-            return Optional.of(new TagPagePayload(tag, page));
+            return Optional.of(new TagPagePayload(tagId, page));
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
-    }
-
-    private String encodeTag(String tag) {
-        return ENCODER.encodeToString(tag.getBytes(StandardCharsets.UTF_8));
-    }
-
-    private String decodeTag(String encoded) {
-        return new String(DECODER.decode(encoded), StandardCharsets.UTF_8);
     }
 }

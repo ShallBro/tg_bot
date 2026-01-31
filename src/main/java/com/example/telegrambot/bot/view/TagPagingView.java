@@ -49,7 +49,7 @@ public class TagPagingView {
         return sb.toString();
     }
 
-    public InlineKeyboardMarkup buildKeyboard(String tag, NoteSlice slice) {
+    public InlineKeyboardMarkup buildKeyboard(Long tagId, NoteSlice slice) {
         List<List<InlineKeyboardButton>> keyboard = new ArrayList<>();
 
         List<InlineKeyboardButton> row = new ArrayList<>(2);
@@ -74,14 +74,14 @@ public class TagPagingView {
         if (slice.hasPrev()) {
             navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.prev"))
-                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag, slice.page() - 1)))
+                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tagId, slice.page() - 1)))
                     .build());
         }
 
         if (slice.hasNext()) {
             navRow.add(InlineKeyboardButton.builder()
                     .text(messages.text("tags.nav.next"))
-                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag, slice.page() + 1)))
+                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tagId, slice.page() + 1)))
                     .build());
         }
 

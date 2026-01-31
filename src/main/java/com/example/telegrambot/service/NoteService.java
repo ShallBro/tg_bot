@@ -29,14 +29,14 @@ public class NoteService {
     private final TagParser tagParser;
 
 
-    public NoteSlice findByTagPaged(Long chatId, String tag, int page, int size) {
+    public NoteSlice findByTagIdPaged(Long chatId, Long tagId, int page, int size) {
         int fetch = size + 1;
-        var list = noteRepository.findByChatAndTag(chatId, tag, PageRequest.of(page, fetch));
+        var list = noteRepository.findLatestByTagId(chatId, tagId, PageRequest.of(page, fetch));
 
         boolean hasNext = list.size() > size;
         boolean hasPrev = page > 0;
-
         var items = hasNext ? list.subList(0, size) : list;
+
         return new NoteSlice(items, hasNext, hasPrev, page);
     }
 

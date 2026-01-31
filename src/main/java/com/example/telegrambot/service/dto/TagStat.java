@@ -1,4 +1,4 @@
 package com.example.telegrambot.service.dto;
 
-public record TagStat(String name, long count) {
+public record TagStat(Long id, String name, long count) {
 }

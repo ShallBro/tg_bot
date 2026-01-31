@@ -3,7 +3,9 @@ package com.example.telegrambot.bot.facade;
 import com.example.telegrambot.bot.TelegramBotSender;
 import com.example.telegrambot.bot.message.BotMessageService;
 import com.example.telegrambot.bot.view.TagPagingView;
+import com.example.telegrambot.entity.Tag;
 import com.example.telegrambot.service.NoteService;
+import com.example.telegrambot.service.TagService;
 import com.example.telegrambot.service.dto.NoteSlice;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -17,32 +19,34 @@ public class TagPagingFacade {
 
     private final NoteService noteService;
     private final TelegramBotSender sender;
+    private final TagService tagService;
     private final TagPagingView tagPagingView;
     private final BotMessageService messages;
 
-    public void sendFirstPage(Long chatId, String tag) {
-        render(chatId, null, tag, 0, false);
+    public void sendFirstPage(Long chatId, String tagName) {
+        Tag tag = tagService.requireByName(tagName);
+        render(chatId, null, tag.getId(), tag.getName(), 0, false);
     }
 
-    public void render(Long chatId, Integer messageId, String tag, int page, boolean edit) {
-        NoteSlice slice = noteService.findByTagPaged(chatId, tag, page, PAGE_SIZE);
+    public void render(Long chatId, Integer messageId, Long tagId, String tagName, int page, boolean edit) {
+        NoteSlice slice = noteService.findByTagIdPaged(chatId, tagId, page, PAGE_SIZE);
 
         if (slice.items().isEmpty()) {
             if (page > 0) {
-                render(chatId, messageId, tag, 0, edit);
+                render(chatId, messageId, tagId, tagName, 0, edit);
                 return;
             }
 
             if (edit) {
-                sender.editMarkdown(chatId, messageId, messages.text("tag.command.empty", tag), null);
+                sender.editMarkdown(chatId, messageId, messages.text("tag.command.empty", tagName), null);
             } else {
-                sender.sendMarkdown(chatId, messages.text("tag.command.empty", tag), null);
+                sender.sendMarkdown(chatId, messages.text("tag.command.empty", tagName), null);
             }
             return;
         }
 
-        String text = tagPagingView.buildMessage(tag, slice);
-        InlineKeyboardMarkup inlineKeyboardMarkup = tagPagingView.buildKeyboard(tag, slice);
+        String text = tagPagingView.buildMessage(tagName, slice);
+        InlineKeyboardMarkup inlineKeyboardMarkup = tagPagingView.buildKeyboard(tagId, slice);
 
         if (edit) {
             sender.editMarkdown(chatId, messageId, text, inlineKeyboardMarkup);

@@ -60,7 +60,7 @@ public class TagListView {
         for (TagStat tag : slice.items()) {
             row.add(InlineKeyboardButton.builder()
                     .text("#" + tag.name())
-                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag.name(), 0)))
+                    .callbackData(tagNotesCallbackCodec.encode(new TagPagePayload(tag.id(), 0)))
                     .build());
 
             if (row.size() == 2) {
