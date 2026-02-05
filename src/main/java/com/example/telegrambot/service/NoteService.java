@@ -105,6 +105,21 @@ public class NoteService {
     }
 
     @Transactional
+    public boolean updateTextNote(Long chatId, Long id, String text) {
+        var note = noteRepository.findByIdAndChatId(id, chatId);
+        if (note.isEmpty()) {
+            return false;
+        }
+
+        Note entity = note.get();
+        entity.setText(text);
+        entity.getTags().clear();
+        applyTags(entity, text);
+        noteRepository.save(entity);
+        return true;
+    }
+
+    @Transactional
     public boolean delete(Long chatId, Long id) {
         var note = noteRepository.findByIdAndChatId(id, chatId);
         if (note.isEmpty()) return false;

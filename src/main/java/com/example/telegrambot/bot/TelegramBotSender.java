@@ -26,6 +26,10 @@ public class TelegramBotSender {
         send(chatId, text, null, null);
     }
 
+    public void sendText(Long chatId, String text, InlineKeyboardMarkup markup) {
+        send(chatId, text, null, markup);
+    }
+
     private void send(Long chatId, String text, String parseMode, InlineKeyboardMarkup markup) {
         try {
             SendMessage.SendMessageBuilder builder = SendMessage.builder()
